@@ -1,4 +1,4 @@
-Blender 2.8 plugin for Importing/Exporting brush palettes
+<img src="https://download.blender.org/institute/logos/blender-socket.png" height="20px"/> 2.8 plugin for Importing/Exporting brush palettes
 
 #### How to install
 
