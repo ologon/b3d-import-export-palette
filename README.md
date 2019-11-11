@@ -10,8 +10,8 @@
 #### How to use
 
 Once installed and enabled, use the "Export" and "Import" buttons
-in the Brush color palette panel to load and save your palettes,
-or import a palette exported from an image editing software (Asesprite, GIMP, Krita, etc.)
+in the Brush color palette panel to load and save your palettes.
+You can also import a palette saved from an image editing software (Asesprite, GIMP, Krita, etc.)
 
 <img src="https://i.ibb.co/RpDMZTQ/Capture-palette.png">
 
