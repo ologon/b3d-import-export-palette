@@ -104,8 +104,8 @@ def draw_properties(self, context):
     layout = self.layout
     
     row = layout.row()
-    row.operator("iepalette.import")
-    row.operator("iepalette.export")
+    row.operator("iepalette.import", icon='IMPORT')
+    row.operator("iepalette.export", icon='EXPORT')
 
 
 def register():
