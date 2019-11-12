@@ -52,6 +52,8 @@ class VIEW3D_OP_ImportPalette(bpy.types.Operator, ImportHelper):
         file.close()
         self.report({'INFO'}, "Imported Palette %s" % (palette.name_full))
 
+        context.tool_settings.image_paint.palette = palette
+
         return {'FINISHED'}   
     
     
