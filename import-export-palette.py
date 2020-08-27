@@ -15,9 +15,9 @@ from os import path
 import urllib.request
 import json
 
-class VIEW3D_MT_LoatPaletteMenu(bpy.types.Menu):
+class VIEW3D_MT_LoadPaletteMenu(bpy.types.Menu):
     """Optional tools for load palette"""
-    bl_idname = 'VIEW3D_MT_LoatPaletteMenu'
+    bl_idname = 'VIEW3D_MT_LoadPaletteMenu'
     bl_label = "Palette Tools"
 
     def draw(self, context):
@@ -204,7 +204,7 @@ classes = (
     VIEW3D_OP_ExportPalette,
     VIEW3D_OP_LoadLospecPalette,
     VIEW3D_OP_LospecRandomPalette,
-    VIEW3D_MT_LoatPaletteMenu
+    VIEW3D_MT_LoadPaletteMenu
 )
 
 
@@ -214,7 +214,7 @@ def draw_properties(self, context):
     row = layout.row()
     row.operator("iepalette.import", icon='IMPORT')
     row.operator("iepalette.export", icon='EXPORT')
-    row.menu('VIEW3D_MT_LoatPaletteMenu', icon='DOWNARROW_HLT', text='')
+    row.menu('VIEW3D_MT_LoadPaletteMenu', icon='DOWNARROW_HLT', text='')
 
 
 def register():
