@@ -2,7 +2,7 @@ bl_info = {
     "name": "Brush Palette",
     "author": "Spadafina Alfredo",
     # Final version number must be two numerals to support x.x.00
-    "version": (1, 0, 0),
+    "version": (1, 1, 0),
     "blender": (2, 80, 0),
     "description": "Import/Export Brush Palette (.gpl)",
     "location": "Paint Tool Options > Brush > Color Palette",
@@ -12,6 +12,109 @@ bl_info = {
 import bpy
 from bpy_extras.io_utils import ImportHelper, ExportHelper
 from os import path
+import urllib.request
+import json
+
+class VIEW3D_MT_LoadPaletteMenu(bpy.types.Menu):
+    """Optional tools for load palette"""
+    bl_idname = 'VIEW3D_MT_LoadPaletteMenu'
+    bl_label = "Palette Tools"
+
+    def draw(self, context):
+        layout = self.layout
+        layout.operator("iepalette.lospec", icon="OUTLINER_OB_LIGHTPROBE")
+        layout.operator("iepalette.lospecrandom", icon="GPBRUSH_RANDOMIZE")
+
+class VIEW3D_OP_LospecRandomPalette(bpy.types.Operator):
+    """Load a random palette from Lospec"""
+    bl_idname = "iepalette.lospecrandom"
+    bl_label = "Random Lospec Palette"
+
+    def execute(self, context):
+        try:
+            rand_url = urllib.request.urlopen("https://lospec.com/palette-list/random")
+            bpy.ops.iepalette.lospec(palette_uri=rand_url.geturl())
+        except urllib.error.URLError as e:
+            self.report({'ERROR'}, e.reason)
+        return {'FINISHED'}
+
+class VIEW3D_OP_LoadLospecPalette(bpy.types.Operator):
+    """Import palette from Lospec"""
+    bl_idname = "iepalette.lospec"
+    bl_label = "Load Lospec Palette"
+
+    palette_uri: bpy.props.StringProperty(
+        name="Palette URL",
+        description="Palette URL from the lospec site",
+        default=""
+    )
+
+    def execute(self, context):
+        target_uri = self.palette_uri
+        if not target_uri.startswith("https://lospec.com/palette-list/"):
+            self.report({'ERROR'}, "URL doesn't look like a lospec palette")
+        else:
+            target_uri += ".json"
+            pal_raw = None
+            try:
+                response = urllib.request.urlopen(target_uri)
+                pal_raw = response.read().decode("utf-8")
+                # The lospec json API doesn't return 404 for palettes that cannot be found. 
+                # The workaround is to detect when we received a HTML document instead of a JSON response
+                if pal_raw.startswith("<!DOCTYPE html>"):
+                    pal_raw = None
+            except urllib.error.URLError as e:
+                self.report({'ERROR'}, e.reason)
+            
+            if pal_raw is None:
+                self.report({'ERROR'}, "Lospec palette could not be found")
+            else:
+                pal_json = json.loads(pal_raw)
+                
+                new_pal = None
+                bl_palettes = bpy.data.palettes
+                
+                pal_name = pal_json["name"]
+                pal_idx = bl_palettes.find(pal_name)
+                if pal_idx is not -1:
+                    new_pal = bl_palettes[pal_idx]
+                else:
+                    new_pal = bl_palettes.new(pal_name)
+                
+                new_pal.colors.clear()
+
+                pal_colors = pal_json["colors"]
+                for color_data in pal_colors:
+                    color_val = None
+                    try:
+                        color_val =(
+                            int(color_data[0:2], 16) / 255.0,
+                            int(color_data[2:4], 16) / 255.0,
+                            int(color_data[4:6], 16) / 255.0
+                        )
+                    except e:
+                        self.reprt({'ERROR'}, "Error parsing color {}, {}".format(color_data, e))
+                    
+                    if color_val is not None:
+                        bl_color = new_pal.colors.new()
+                        bl_color.color = color_val
+                
+                context.tool_settings.image_paint.palette = new_pal
+                self.report({'INFO'}, "Lospec palette: {}, {} colors".format(pal_name, len(pal_colors)))
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column()
+        row = col.row()
+        row.operator("wm.url_open", text="Palette List").url = "https://lospec.com/palette-list"
+        row.operator("wm.url_open", text="Random").url = "https://lospec.com/palette-list/random"
+        col.label(text="Paste the URL of a Lospec palette")
+        col.prop(self, "palette_uri")
 
 
 class VIEW3D_OP_ImportPalette(bpy.types.Operator, ImportHelper):
@@ -99,6 +202,9 @@ class VIEW3D_OP_ExportPalette(bpy.types.Operator, ExportHelper):
 classes = (
     VIEW3D_OP_ImportPalette,
     VIEW3D_OP_ExportPalette,
+    VIEW3D_OP_LoadLospecPalette,
+    VIEW3D_OP_LospecRandomPalette,
+    VIEW3D_MT_LoadPaletteMenu
 )
 
 
@@ -108,6 +214,7 @@ def draw_properties(self, context):
     row = layout.row()
     row.operator("iepalette.import", icon='IMPORT')
     row.operator("iepalette.export", icon='EXPORT')
+    row.menu('VIEW3D_MT_LoadPaletteMenu', icon='DOWNARROW_HLT', text='')
 
 
 def register():

@@ -13,8 +13,14 @@ Once installed and enabled, use the "Export" and "Import" buttons
 in the Brush color palette panel to load and save your palettes.
 You can also import a palette saved from an image editing software (Asesprite, GIMP, Krita, etc.)
 
-<img src="https://i.ibb.co/NnJr8PV/Capture.png">
+<img src="https://i.ibb.co/SdhkFXz/blender-MFQqs-DKTr7.png">
 
 #### Supported palette formats
 
 * .GPL
+
+#### Lospec palettes
+
+This addon can pull palettes from the [Lospec](https://lospec.com/palette-list) website. Open the popup to paste a palette URL in, or ask for a random palette from inside Blender.
+
+<img src="https://i.ibb.co/JdGmbVh/blender-Es-Hsqn-Ch-IR.png">
