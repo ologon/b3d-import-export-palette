@@ -2,7 +2,7 @@ bl_info = {
     "name": "Brush Palette",
     "author": "Spadafina Alfredo",
     # Final version number must be two numerals to support x.x.00
-    "version": (1, 1, 0),
+    "version": (1, 1, 1),
     "blender": (2, 80, 0),
     "description": "Import/Export Brush Palette (.gpl)",
     "location": "Paint Tool Options > Brush > Color Palette",
