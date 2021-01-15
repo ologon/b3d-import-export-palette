@@ -2,7 +2,7 @@ bl_info = {
     "name": "Brush Palette",
     "author": "Spadafina Alfredo",
     # Final version number must be two numerals to support x.x.00
-    "version": (1, 1, 0),
+    "version": (1, 1, 1),
     "blender": (2, 80, 0),
     "description": "Import/Export Brush Palette (.gpl)",
     "location": "Paint Tool Options > Brush > Color Palette",
@@ -99,7 +99,7 @@ class VIEW3D_OP_LoadLospecPalette(bpy.types.Operator):
                         bl_color = new_pal.colors.new()
                         bl_color.color = color_val
                 
-                context.tool_settings.image_paint.palette = new_pal
+                VIEW3D_OP_ImportPalette.set_palette(context, new_pal)
                 self.report({'INFO'}, "Lospec palette: {}, {} colors".format(pal_name, len(pal_colors)))
         return {'FINISHED'}
 
@@ -127,6 +127,11 @@ class VIEW3D_OP_ImportPalette(bpy.types.Operator, ImportHelper):
         default="*.gpl",
         options={'HIDDEN'},
     )
+
+    @staticmethod
+    def set_palette(context, palette):
+        context.tool_settings.image_paint.palette = palette
+        context.tool_settings.gpencil_paint.palette = palette
     
     def execute(self, context):        
         filename = path.splitext(path.basename(self.filepath))[0]
@@ -155,7 +160,7 @@ class VIEW3D_OP_ImportPalette(bpy.types.Operator, ImportHelper):
         file.close()
         self.report({'INFO'}, "Imported Palette %s" % (palette.name_full))
 
-        context.tool_settings.image_paint.palette = palette
+        VIEW3D_OP_ImportPalette.set_palette(context, palette)
 
         return {'FINISHED'}   
     
@@ -172,8 +177,10 @@ class VIEW3D_OP_ExportPalette(bpy.types.Operator, ExportHelper):
         options={'HIDDEN'},
     )
 
-    def execute(self, context):       
+    def execute(self, context):
         palette = context.tool_settings.image_paint.palette
+        if context.active_object.mode == 'PAINT_GPENCIL':
+            palette = context.tool_settings.gpencil_paint.palette
         
         try:
             file = open(self.filepath, "w")
@@ -222,10 +229,12 @@ def register():
         bpy.utils.register_class(cls)
         
     bpy.types.VIEW3D_PT_tools_brush_swatches.prepend(draw_properties)
+    bpy.types.VIEW3D_PT_tools_grease_pencil_brush_mix_palette.prepend(draw_properties)
         
 
 def unregister():
     bpy.types.VIEW3D_PT_tools_brush_swatches.remove(draw_properties)
+    bpy.types.VIEW3D_PT_tools_grease_pencil_brush_mix_palette.remove(draw_properties)
     
     for cls in classes:
         bpy.utils.unregister_class(cls)
